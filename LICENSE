@@ -1,0 +1,38 @@
+
+---
+
+### 4. `src/preprocess.py`
+```python
+"""Binary to grayscale image conversion."""
+import numpy as np
+from PIL import Image
+import os
+
+def binary_to_grayscale(file_path, target_size=(224, 224)):
+    """
+    Read binary file, convert to 1D byte array, reshape to 2D grayscale.
+    """
+    with open(file_path, 'rb') as f:
+        data = f.read()
+    
+    # Convert bytes to numpy array (0-255)
+    arr = np.frombuffer(data, dtype=np.uint8)
+    
+    # Determine optimal square dimension
+    side = int(np.ceil(np.sqrt(len(arr))))
+    padded = np.zeros(side * side, dtype=np.uint8)
+    padded[:len(arr)] = arr
+    
+    # Reshape to 2D
+    img_2d = padded.reshape(side, side)
+    
+    # Resize to target
+    img = Image.fromarray(img_2d, mode='L')
+    img = img.resize(target_size, Image.Resampling.LANCZOS)
+    
+    return img
+
+def save_grayscale(file_path, output_path, target_size=(224, 224)):
+    img = binary_to_grayscale(file_path, target_size)
+    img.save(output_path)
+    return img
